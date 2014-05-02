@@ -1,6 +1,6 @@
 {
   "name": "care-package",
-  "description": "Bundle and cache assets based on your own criteria",
+  "description": "Bundle and cache assets based on your own criteria.\n\nWarning! This is currently under heavy development and is as it stands, pointless.",
   "main": "./lib/care-package",
   "author": "ribot",
   "contributors": [
