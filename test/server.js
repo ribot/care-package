@@ -1,6 +1,7 @@
 // Dependencies
 var express = require( 'express' ),
     http = require( 'http' ),
+    _ = require( 'underscore' ),
     Care = require( '../' );
 
 var app = express(),
@@ -18,21 +19,20 @@ var jsCare = new Care( {
   items: [
     {
       assets: [
-        'base'
+        'base',
+        'some-lib'
       ]
     },
     {
       yep: 'smallScreen',
       assets: [
-        'small',
-        'small-menu'
+        'small'
       ]
     },
     {
       nope: 'smallScreen',
       assets: [
-        'large',
-        'large-menu'
+        'large'
       ]
     },
     {
@@ -100,19 +100,18 @@ router.get( '/js', function ( request, response, next ) {
       return response.send( 500, error );
     }
 
-    response.type( 'application/javascript' );
+    /*response.type( 'application/javascript' );
 
     if ( bundle.pipe && bundle.readable ) {
       return bundle.pipe( response );
     }
 
-    if ( bundle.length ) {
+    if ( _.isString( bundle ) ) {
       return response.sendFile( bundle );
-    }
+    }*/
 
-    if ( bundle === false ) {
-      return response.send( 200, 'Testing JS' );
-    }
+    // TEMP
+    response.send( 200, bundle );
 
   } );
 
@@ -127,19 +126,18 @@ router.get( '/css', function ( request, response, next ) {
       return response.send( 500, error );
     }
 
-    response.type( 'text/css' );
+    /*response.type( 'text/css' );
 
     if ( bundle.pipe && bundle.readable ) {
       return bundle.pipe( response );
     }
 
-    if ( bundle.length ) {
+    if ( _.isString( bundle ) ) {
       return response.sendFile( bundle );
-    }
+    }*/
 
-    if ( bundle === false ) {
-      return response.send( 200, 'Testing CSS' );
-    }
+    // TEMP
+    response.send( 200, bundle );
 
   } );
 
@@ -154,19 +152,18 @@ router.get( '/cached', function ( request, response, next ) {
       return response.send( 500, error );
     }
 
-    response.type( 'text/css' );
+    /*response.type( 'text/css' );
 
     if ( bundle.pipe && bundle.readable ) {
       return bundle.pipe( response );
     }
 
-    if ( bundle.length ) {
+    if ( _.isString( bundle ) ) {
       return response.sendFile( bundle );
-    }
+    }*/
 
-    if ( bundle === false ) {
-      return response.send( 200, 'Testing CSS' );
-    }
+    // TEMP
+    response.send( 200, bundle );
 
   } );
 

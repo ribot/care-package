@@ -32,7 +32,7 @@ Care.prototype = {
 
     // TODO: concat files
 
-    done( null, false );
+    done( null, requiredAssets );
 
   }
 
