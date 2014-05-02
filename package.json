@@ -1,0 +1,31 @@
+{
+  "name": "care-package",
+  "description": "Bundle and cache assets based on your own criteria",
+  "main": "./lib/care-package",
+  "author": "ribot",
+  "contributors": [
+    {
+      "name": "Stefan Pearson",
+      "email": "stefan@ribot.co.uk"
+    }
+  ],
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ribot/care-package.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ribot/care-package/issues"
+  },
+  "devDependencies": {
+    "express": "^4.1.1",
+    "supertest": "^0.12.0"
+  },
+  "scripts": {
+    "test": "./test/"
+  },
+  "dependencies": {
+    "async": "^0.8.0",
+    "underscore": "^1.6.0"
+  }
+}
