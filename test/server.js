@@ -59,7 +59,8 @@ var cssCare = new Care( {
   items: [
     {
       assets: [
-        'base'
+        'base',
+        'build'
       ]
     },
     {

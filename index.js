@@ -1,9 +1,9 @@
 // Dependencies
 var path = require( 'path' ),
     stream = require( 'stream' ),
+    fs = require( 'fs' ),
     _ = require( 'underscore' ),
-    async = require( 'async' ),
-    Kat = require( 'kat' );
+    CombinedStream = require( 'combined-stream' );
 
 /**
  * Care constructor
@@ -41,10 +41,20 @@ Care.prototype = {
  * Normalise config items from user-facing sugar
  */
 var normaliseItems = function normaliseItems ( items ) {
-  var normalisedCollection = [];
+  var normalisedCollection = [],
+      assetDefaults;
+
+  assetDefaults = {
+    wrap: {
+      start: '',
+      end: ''
+    }
+  };
 
   _.each( items, function ( item, index ) {
-    var normalised = {};
+    var normalised = {
+      assets: []
+    };
 
     if ( _.isString( item.yep ) ) {
       normalised.yep = [ item.yep ];
@@ -63,13 +73,15 @@ var normaliseItems = function normaliseItems ( items ) {
     }
 
     normalised.assets = _.map( item.assets, function ( asset, index ) {
+
       if ( _.isString( asset ) ) {
-        return {
+        return _.extend( {}, assetDefaults, {
           path: asset
-        };
+        } );
       } else {
-        return asset;
+        return _.extend( {}, assetDefaults, asset );
       }
+
     } );
 
     normalisedCollection.push( normalised );
@@ -154,69 +166,48 @@ var filterRequiredAssets = function filterRequiredAssets ( query ) {
 };
 
 /**
- * Concatenate files
+ * Create and pipe concat stream
  */
 var concatFiles = function concatFiles ( assets, done ) {
   var basePath = this.config.basePath || '',
       suffix = this.config.suffix || '',
-      concatStream = new Kat(),
-      i = 0;
-
-  concatStream.on( 'start', function () {
-
-    // Close wrap for previous file
-    if ( assets[ i - 1 ] ) {
-      if ( assets[ i - 1 ].wrap ) {
-        if ( assets[ i - 1 ].wrap.end ) {
-          concatStream.push( '\n' );
-          concatStream.push( assets[ i - 1 ].wrap.end );
-        }
-      }
-    }
-
-    // Open wrap for current file
-    if ( assets[ i ].wrap ) {
-      if ( assets[ i ].wrap.start ) {
-        concatStream.push( '\n' );
-        concatStream.push( assets[ i ].wrap.start );
-        if ( i === 0 ) {
-          concatStream.push( '\n' );
-        }
-      }
-    }
-
-    if ( i > 0 ) {
-      // Ensure line break before every file
-      concatStream.push( '\n' );
-    }
-
-    // Iterate
-    ++i;
-
-  } );
-
-  concatStream.on( 'files', function () {
-
-    if ( assets[ i - 1 ] ) {
-      if ( assets[ i - 1 ].wrap ) {
-        if ( assets[ i - 1 ].wrap.end ) {
-          concatStream.push( '\n' + assets[ i - 1 ].wrap.end );
-        }
-      }
-    }
-
-    // Final line break
-    concatStream.push( '\n' );
-
-  } );
+      concatStream = CombinedStream.create();
 
   _.each( assets, function ( asset, index ) {
-    concatStream.add( path.join( basePath, asset.path + suffix ) );
+    var fileStream = fs.createReadStream( path.join( basePath, asset.path + suffix ) ),
+        wrapStartStream = new stream.Readable(),
+        wrapEndStream = new stream.Readable();
+
+    wrapStartStream._read = noop;
+    wrapEndStream._read = noop;
+
+    // Append streams
+    concatStream.append( wrapStartStream );
+    concatStream.append( fileStream );
+    concatStream.append( wrapEndStream );
+
+    // Add wrap start
+    if ( asset.wrap.start.length ) {
+      wrapStartStream.push( asset.wrap.start + '\n' );
+    }
+    wrapStartStream.push( null );
+
+    // Add wrap end on fileStream 'end' event
+    fileStream.on( 'end', function () {
+      wrapEndStream.push( '\n' );
+      if ( asset.wrap.end.length ) {
+        wrapEndStream.push( asset.wrap.end );
+        wrapEndStream.push( '\n' );
+      }
+      wrapEndStream.push( null );
+    } );
+
   } );
 
-  // TODO: write file to disk and cache as query string
-
+  // Callback
   done( null, concatStream );
+
+  // TODO: write file to disk and cache as query string
 
 };
 
@@ -226,6 +217,11 @@ var concatFiles = function concatFiles ( assets, done ) {
 var checkCache = function checkCache () {
 
 };
+
+/**
+ * No-op
+ */
+var noop = function noop () {};
 
 // Exports
 module.exports = Care;
