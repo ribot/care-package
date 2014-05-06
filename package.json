@@ -9,7 +9,7 @@
       "email": "stefan@ribot.co.uk"
     }
   ],
-  "version": "0.0.2",
+  "version": "0.0.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/ribot/care-package.git"
@@ -27,7 +27,6 @@
   "dependencies": {
     "async": "^0.8.0",
     "combined-stream": "0.0.4",
-    "kat": "^0.3.0",
     "underscore": "^1.6.0"
   }
 }
