@@ -1,1 +1,1 @@
-// small.js
+/* small */

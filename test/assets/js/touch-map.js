@@ -1,1 +1,1 @@
-// touch-map.js
+/* touch-map */

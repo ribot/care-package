@@ -1,0 +1,14 @@
+# nodemon ignore list
+
+/bin/*
+/temp/*
+/vendor/*
+/public/*
+/sass/*
+/.sass-cache/*
+readme.md
+package.json
+Gruntfile.js
+*.css
+*.json
+/test/assets/*

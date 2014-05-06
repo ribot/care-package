@@ -1,5 +1,6 @@
 // Dependencies
-var express = require( 'express' ),
+var path = require( 'path' ),
+    express = require( 'express' ),
     http = require( 'http' ),
     _ = require( 'underscore' ),
     Care = require( '../' );
@@ -14,7 +15,7 @@ app.use( router );
 
 // JS care test instance
 var jsCare = new Care( {
-  basePath: './assets/js',
+  basePath: path.join( __dirname, 'assets/js' ),
   suffix: '.js',
   items: [
     {
@@ -53,7 +54,7 @@ var jsCare = new Care( {
 
 // CSS care test instance
 var cssCare = new Care( {
-  basePath: './assets/css',
+  basePath: path.join( __dirname, 'assets/css' ),
   suffix: '.css',
   items: [
     {
@@ -78,7 +79,7 @@ var cssCare = new Care( {
 
 // Store care test instance
 var cacheStoreCare = new Care( {
-  basePath: './assets/css',
+  basePath: path.join( __dirname, 'assets/css' ),
   suffix: '.css',
   store: '',
   conditions: [
@@ -100,7 +101,7 @@ router.get( '/js', function ( request, response, next ) {
       return response.send( 500, error );
     }
 
-    /*response.type( 'application/javascript' );
+    response.type( 'application/javascript' );
 
     if ( bundle.pipe && bundle.readable ) {
       return bundle.pipe( response );
@@ -108,10 +109,7 @@ router.get( '/js', function ( request, response, next ) {
 
     if ( _.isString( bundle ) ) {
       return response.sendFile( bundle );
-    }*/
-
-    // TEMP
-    response.send( 200, bundle );
+    }
 
   } );
 
@@ -126,7 +124,7 @@ router.get( '/css', function ( request, response, next ) {
       return response.send( 500, error );
     }
 
-    /*response.type( 'text/css' );
+    response.type( 'text/css' );
 
     if ( bundle.pipe && bundle.readable ) {
       return bundle.pipe( response );
@@ -134,10 +132,7 @@ router.get( '/css', function ( request, response, next ) {
 
     if ( _.isString( bundle ) ) {
       return response.sendFile( bundle );
-    }*/
-
-    // TEMP
-    response.send( 200, bundle );
+    }
 
   } );
 
@@ -152,7 +147,7 @@ router.get( '/cached', function ( request, response, next ) {
       return response.send( 500, error );
     }
 
-    /*response.type( 'text/css' );
+    response.type( 'text/css' );
 
     if ( bundle.pipe && bundle.readable ) {
       return bundle.pipe( response );
@@ -160,10 +155,7 @@ router.get( '/cached', function ( request, response, next ) {
 
     if ( _.isString( bundle ) ) {
       return response.sendFile( bundle );
-    }*/
-
-    // TEMP
-    response.send( 200, bundle );
+    }
 
   } );
 

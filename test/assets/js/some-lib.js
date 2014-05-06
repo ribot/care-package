@@ -1,1 +1,1 @@
-// some-lib.js
+/* some-lib */

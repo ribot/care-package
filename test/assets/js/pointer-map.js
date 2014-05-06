@@ -1,1 +1,1 @@
-// pointer-map.js
+/* pointer-map */

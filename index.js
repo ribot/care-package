@@ -1,6 +1,9 @@
 // Dependencies
-var _ = require( 'underscore' ),
-    async = require( 'async' );
+var path = require( 'path' ),
+    stream = require( 'stream' ),
+    _ = require( 'underscore' ),
+    async = require( 'async' ),
+    Kat = require( 'kat' );
 
 /**
  * Care constructor
@@ -22,17 +25,13 @@ Care.prototype = {
     var normalisedQuery = normaliseQuery( query ),
         requiredAssets = filterRequiredAssets.call( this, normalisedQuery );
 
-    console.log( 'QUERY\n' );
-    console.log( JSON.stringify( normalisedQuery, null, 2 ) );
-    console.log( '\n' );
+    // TODO: check cache with serialised normalised query
 
-    console.log( 'REQUIRED\n' );
-    console.log( JSON.stringify( requiredAssets, null, 2 ) );
-    console.log( '\n' );
-
-    // TODO: concat files
-
-    done( null, requiredAssets );
+    // Concat files
+    concatFiles.call( this, requiredAssets, function ( error, fileStream ) {
+      if ( error ) { return done( error ); }
+      done( null, fileStream );
+    } );
 
   }
 
@@ -112,13 +111,13 @@ var filterRequiredAssets = function filterRequiredAssets ( query ) {
     var include = false,
         conditionResults = [];
 
-    // If item has no conditions, include asset
+    // If item has no conditions, merge required assets and return early
     if ( !item.hasOwnProperty( 'yep' ) && !item.hasOwnProperty( 'nope' ) ) {
       requiredAssets = _.union( requiredAssets, item.assets );
       return;
     }
 
-    // If item has yep conditions
+    // Check yep conditions
     if ( item.hasOwnProperty( 'yep' ) ) {
 
       conditionResults.push( _.every( item.yep, function ( yepCondition, index ) {
@@ -131,7 +130,7 @@ var filterRequiredAssets = function filterRequiredAssets ( query ) {
 
     }
 
-    // If item has nope conditions
+    // Check nope conditions
     if ( item.hasOwnProperty( 'nope' ) ) {
 
       conditionResults.push( _.every( item.nope, function ( nopeCondition, index ) {
@@ -144,8 +143,7 @@ var filterRequiredAssets = function filterRequiredAssets ( query ) {
 
     }
 
-    console.log( 'item results', conditionResults );
-
+    // Merge required assets
     if ( _.every( conditionResults ) ) {
       requiredAssets = _.union( requiredAssets, item.assets );
     }
@@ -158,9 +156,67 @@ var filterRequiredAssets = function filterRequiredAssets ( query ) {
 /**
  * Concatenate files
  */
-var concatFiles = function concatFiles ( required, done ) {
+var concatFiles = function concatFiles ( assets, done ) {
+  var basePath = this.config.basePath || '',
+      suffix = this.config.suffix || '',
+      concatStream = new Kat(),
+      i = 0;
 
-  done( null, [] );
+  concatStream.on( 'start', function () {
+
+    // Close wrap for previous file
+    if ( assets[ i - 1 ] ) {
+      if ( assets[ i - 1 ].wrap ) {
+        if ( assets[ i - 1 ].wrap.end ) {
+          concatStream.push( '\n' );
+          concatStream.push( assets[ i - 1 ].wrap.end );
+        }
+      }
+    }
+
+    // Open wrap for current file
+    if ( assets[ i ].wrap ) {
+      if ( assets[ i ].wrap.start ) {
+        concatStream.push( '\n' );
+        concatStream.push( assets[ i ].wrap.start );
+        if ( i === 0 ) {
+          concatStream.push( '\n' );
+        }
+      }
+    }
+
+    if ( i > 0 ) {
+      // Ensure line break before every file
+      concatStream.push( '\n' );
+    }
+
+    // Iterate
+    ++i;
+
+  } );
+
+  concatStream.on( 'files', function () {
+
+    if ( assets[ i - 1 ] ) {
+      if ( assets[ i - 1 ].wrap ) {
+        if ( assets[ i - 1 ].wrap.end ) {
+          concatStream.push( '\n' + assets[ i - 1 ].wrap.end );
+        }
+      }
+    }
+
+    // Final line break
+    concatStream.push( '\n' );
+
+  } );
+
+  _.each( assets, function ( asset, index ) {
+    concatStream.add( path.join( basePath, asset.path + suffix ) );
+  } );
+
+  // TODO: write file to disk and cache as query string
+
+  done( null, concatStream );
 
 };
 
